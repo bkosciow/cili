@@ -185,4 +185,3 @@ void init_display(ILIObject *self){
     data(self, 0x0133);
     delay(100);
 }
-

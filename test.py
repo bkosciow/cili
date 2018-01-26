@@ -1,17 +1,16 @@
 import socket
-
-import RPi.GPIO  # pylint: disable=I0011,F0401
-import cili9325
-import cili9486
-RPi.GPIO.setmode(RPi.GPIO.BCM)
-RPi.GPIO.setup(6, RPi.GPIO.OUT)
-RPi.GPIO.output(6, 1)
-
+import os
 
 if socket.gethostname() == "rpiv2":
+    import cili9486
     # width, height, SPI, SPEED, CS, RST, RS
     lcd = cili9486.ili(320, 480, 0, 3200000, 8, 25, 24)
 else:
+    import cili9325
+    import RPi.GPIO  # pylint: disable=I0011,F0401
+    RPi.GPIO.setmode(RPi.GPIO.BCM)
+    RPi.GPIO.setup(6, RPi.GPIO.OUT)
+    RPi.GPIO.output(6, 1)
     lcd = cili9325.ili(320, 240, 18, 27, 17, 25, 22, 23, 24, 5, 12, 16, 20, 21)
 
 lcd.rotation = 270
@@ -21,6 +20,7 @@ lcd.fill_rect(0,0,10,10)
 
 lcd.background_color = (255,255,0)
 lcd.fill_rect(0,0,100,200)
+#exit(0);
 lcd.background_color = (128,255,128)
 lcd.background_color = (0,255,255)
 lcd.fill_rect(0,0,240-1,320-1)

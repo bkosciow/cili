@@ -1,7 +1,6 @@
 #include <wiringPi.h>
 #include <stdint.h>
 #include "ili.h"
-//#include "interface.h"
 
 static void set_pins(ILIObject *self, uint8_t data);
 static void set_pin(uint8_t pin, unsigned char value);

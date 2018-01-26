@@ -128,4 +128,3 @@ void init_display(ILIObject *self){
 
     delay(100);
 }
-

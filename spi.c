@@ -3,16 +3,16 @@
 #include <stdint.h>
 #include "ili.h"
 #include "spi.h"
-//#include "interface.h"
 
 static void spi_send(ILIObject *self, uint16_t data);
 
-unsigned char buffer[1];
+unsigned char buffer[2];
 int result;
 
 static void spi_send(ILIObject *self, uint16_t data) {
-    buffer[0] = data;
-    result = wiringPiSPIDataRW(self->SPI, buffer, 1);
+    buffer[0] = data >> 8;
+    buffer[1] = data;
+    result = wiringPiSPIDataRW(self->SPI, buffer, 2);
     //write(self->SPI, data);
 }
 
