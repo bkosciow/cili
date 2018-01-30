@@ -199,3 +199,18 @@ PyObject *ili_draw_arc(ILIObject *self, PyObject *args) {
 
     return Py_None;
 }
+
+PyObject *ili_draw_image(ILIObject *self, PyObject *args) {
+    PyObject *o;
+    int pos_x, pos_y;
+    PyObject *image;
+
+    if (!PyArg_ParseTuple(args, "IIO", &pos_x, &pos_y, &o)) {
+        return NULL;
+    }
+    image = PyObject_CallMethodObjArgs(o, PyUnicode_FromString("convert"), PyUnicode_FromString("RGB"), NULL);
+
+    draw_image(self, pos_x, pos_y, image);
+
+    return Py_None;
+}

@@ -17,6 +17,8 @@ char draw_arc_docstring[] =
     "draw_arc(x, y, radius, start, end)";
 char draw_rect_docstring[] =
     "draw_rect(x, y, x1, y1)";
+char draw_image_docstring[] =
+    "draw_image(x, y, PIL Image)";
 
 int ili_init(ILIObject *self, PyObject *args);
 void ili_dealloc(ILIObject* self);
@@ -31,6 +33,7 @@ PyObject *ili_draw_line(ILIObject *self, PyObject *args);
 PyObject *ili_draw_circle(ILIObject *self, PyObject *args);
 PyObject *ili_draw_arc(ILIObject *self, PyObject *args);
 PyObject *ili_draw_rect(ILIObject *self, PyObject *args);
+PyObject *ili_draw_image(ILIObject *self, PyObject *args);
 
 PyObject *magic_get_width(ILIObject *self, void *closure);
 PyObject *magic_get_height(ILIObject *self, void *closure);
@@ -53,6 +56,7 @@ PyMethodDef module_methods[] = {
     {"draw_circle", (PyCFunction)ili_draw_circle, METH_VARARGS, draw_circle_docstring},
     {"draw_arc", (PyCFunction)ili_draw_arc, METH_VARARGS, draw_arc_docstring},
     {"draw_rect", (PyCFunction)ili_draw_rect, METH_VARARGS, draw_rect_docstring},
+    {"draw_image", (PyCFunction)ili_draw_image, METH_VARARGS, draw_image_docstring},
     {NULL, NULL, 0, NULL}
 };
 

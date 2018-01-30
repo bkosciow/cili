@@ -256,8 +256,31 @@ void draw_arc(ILIObject *self, uint16_t pos_x, uint16_t pos_y, uint16_t radius, 
 }
 
 void draw_rect(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1, uint16_t pos_x2, uint16_t pos_y2) {
-        draw_line(self, pos_x1, pos_y1, pos_x2, pos_y1);
-        draw_line(self, pos_x1, pos_y2, pos_x2, pos_y2);
-        draw_line(self, pos_x1, pos_y1, pos_x1, pos_y2);
-        draw_line(self, pos_x2, pos_y1, pos_x2, pos_y2);
+    draw_line(self, pos_x1, pos_y1, pos_x2, pos_y1);
+    draw_line(self, pos_x1, pos_y2, pos_x2, pos_y2);
+    draw_line(self, pos_x1, pos_y1, pos_x1, pos_y2);
+    draw_line(self, pos_x2, pos_y1, pos_x2, pos_y2);
+}
+
+void draw_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, PyObject *image) {
+    PyObject *size;
+    int width, height, i, j;
+    PyObject *pixel;
+    int r,g,b;
+
+    size = PyObject_GetAttrString(image, "size");
+    width = PyLong_AsLong(PyTuple_GetItem(size, 0));
+    height = PyLong_AsLong(PyTuple_GetItem(size, 1));
+
+    set_area(self, pos_x, pos_y, pos_x + width - 1, pos_y + height - 1);
+
+    for(j=0; j<height; j++) {
+        for (i=0; i<width; i++) {
+            pixel = PyObject_CallMethodObjArgs(image, PyUnicode_FromString("getpixel"), Py_BuildValue("(ii)", i, j), NULL);
+            r = PyLong_AsLong(PyTuple_GetItem(pixel, 0));
+            g = PyLong_AsLong(PyTuple_GetItem(pixel, 1));
+            b = PyLong_AsLong(PyTuple_GetItem(pixel, 2));
+            data(self, get_color(r, g, b));
+        }
+    }
 }
