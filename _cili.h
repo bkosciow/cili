@@ -45,6 +45,8 @@ PyObject *magic_get_auto_flush(ILIObject *self, void *closure);
 int *magic_set_auto_flush(ILIObject *self, PyObject *value, void *closure);
 PyObject *magic_get_rotation(ILIObject *self, void *closure);
 int *magic_set_rotation(ILIObject *self, PyObject *value, void *closure);
+PyObject *magic_get_transparency_color(ILIObject *self, void *closure);
+int *magic_set_transparency_color(ILIObject *self, PyObject *value, void *closure);
 
 PyMethodDef module_methods[] = {
     {"init_display", (PyCFunction)ili_init_display, METH_VARARGS, init_display_docstring},
@@ -67,5 +69,6 @@ PyGetSetDef ili_getset[] = {
     {"background_color", (getter)magic_get_background_color, (setter)magic_set_background_color, "background", NULL},
     {"auto_flush", (getter)magic_get_auto_flush, (setter)magic_set_auto_flush, "auto_flush", NULL},
     {"rotation", (getter)magic_get_rotation, (setter)magic_set_rotation, 'rotation', NULL},
+    {"transparency_color", (getter)magic_get_transparency_color, (setter)magic_set_transparency_color, 'transparency_color', NULL},
     {NULL}
 };

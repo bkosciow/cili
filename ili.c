@@ -5,6 +5,17 @@
 #include <math.h>
 #include "ili.h"
 #include "interface.h"
+#include <jpeglib.h>
+#include <setjmp.h>
+
+
+struct my_error_mgr {
+  struct jpeg_error_mgr pub;	/* "public" fields */
+
+  jmp_buf setjmp_buffer;	/* for return to caller */
+};
+
+typedef struct my_error_mgr * my_error_ptr;
 
 void setup_pins(ILIObject *self) {
     wiringPiSetupGpio();
@@ -262,11 +273,24 @@ void draw_rect(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1, uint16_t pos_x
     draw_line(self, pos_x2, pos_y1, pos_x2, pos_y2);
 }
 
-void draw_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, PyObject *image) {
+static int is_transparent(ILIObject *self, int r, int g, int b) {
+    if (self->transparency[0] == -1) {
+        return 0;
+    }
+    if (self->transparency[0] == r && self->transparency[1] == g && self->transparency[2] == b) {
+        return 1;
+    }
+
+    return 0;
+}
+
+void draw_object_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, PyObject *image) {
     PyObject *size;
     int width, height, i, j;
     PyObject *pixel;
     int r,g,b;
+    int temp_area[3] = {-1};
+    int area[3] = {-1};
 
     size = PyObject_GetAttrString(image, "size");
     width = PyLong_AsLong(PyTuple_GetItem(size, 0));
@@ -280,7 +304,83 @@ void draw_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, PyObject *image
             r = PyLong_AsLong(PyTuple_GetItem(pixel, 0));
             g = PyLong_AsLong(PyTuple_GetItem(pixel, 1));
             b = PyLong_AsLong(PyTuple_GetItem(pixel, 2));
-            data(self, get_color(r, g, b));
+            if (is_transparent(self, r, g, b)) {
+                area[0] = pos_x;
+                area[1] = pos_y + j + 1;
+                area[2] = pos_x + width - 1;
+                area[3] = pos_y + height - 1;
+
+                temp_area[0] = pos_x + i + 1;
+                temp_area[1] = pos_y + j;
+                temp_area[2] = pos_x + width -1;
+                temp_area[3] = pos_y + j;
+            } else {
+                if (temp_area[0] != -1) {
+                     set_area(self, temp_area[0], temp_area[1], temp_area[2], temp_area[3]);
+                     temp_area[0] = -1;
+                }
+                data(self, get_color(r, g, b));
+            }
+        }
+        if (area[0] != -1) {
+            set_area(self, area[0], area[1], area[2], area[3]);
+            area[0] = -1;
+            temp_area[0] = -1;
         }
     }
+}
+
+void draw_jpeg_file_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, FILE *infile) {
+    struct jpeg_decompress_struct cinfo;
+    struct jpeg_error_mgr err;
+    JSAMPARRAY buffer;		/* Output row buffer */
+    int row_stride;		/* physical row width in output buffer */
+    int red,green,blue;
+    int i;
+
+    /* Step 1: allocate and initialize JPEG decompression object */
+    cinfo.err = jpeg_std_error(&err);
+    /* Now we can initialize the JPEG decompression object. */
+    jpeg_create_decompress(&cinfo);
+
+    /* Step 2: specify data source (eg, a file) */
+    jpeg_stdio_src(&cinfo, infile);
+
+    /* Step 3: read file parameters with jpeg_read_header() */
+    (void) jpeg_read_header(&cinfo, TRUE);
+
+    /* Step 5: Start decompressor */
+    (void) jpeg_start_decompress(&cinfo);
+
+    /* JSAMPLEs per row in output buffer */
+    row_stride = cinfo.output_width * cinfo.output_components;
+    /* Make a one-row-high sample array that will go away when done with image */
+    buffer = (*cinfo.mem->alloc_sarray)
+        ((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
+
+    set_area(self, pos_x, pos_y, pos_x + cinfo.output_width - 1, pos_y + cinfo.output_height - 1);
+    /* Here we use the library's state variable cinfo.output_scanline as the
+    * loop counter, so that we don't have to keep track ourselves.
+    */
+    while (cinfo.output_scanline < cinfo.output_height) {
+        /* jpeg_read_scanlines expects an array of pointers to scanlines.
+         * Here the array is only one element long, but you could ask for
+         * more than one scanline at a time if that's more convenient.
+         */
+        (void) jpeg_read_scanlines(&cinfo, buffer, 1);
+        unsigned char* pixel_row = (unsigned char*)(buffer[0]);
+        for(i = 0; i < cinfo.output_width; i++) {
+            red = (int)(*pixel_row++);
+            green = (int)(*pixel_row++);
+            blue = (int)(*pixel_row++);
+            data(self, get_color(red, green, blue));
+        }
+    }
+
+    /* Step 7: Finish decompression */
+    (void) jpeg_finish_decompress(&cinfo);
+
+    /* Step 8: Release JPEG decompression object */
+    /* This is an important step since it will release a good deal of memory. */
+    jpeg_destroy_decompress(&cinfo);
 }

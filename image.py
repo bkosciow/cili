@@ -17,5 +17,17 @@ else:
 lcd.rotation = 0
 lcd.init_display()
 
-image_file = Image.open("assets/japan_temple_240x320.jpg")
-lcd.draw_image(0, 0, image_file)
+#print(lcd.transparency_color );
+#image_file = Image.open("assets/japan_temple_240x320.jpg")
+#lcd.draw_image(0, 0, image_file)
+
+lcd.draw_image(0, 0, "assets/japan_temple_240x320g.jpg")
+
+#lcd.draw_image(0, 0, "assets/dsp2017_101_64.png")
+
+#numbers_image = Image.open("assets/dsp2017_101_64.png")
+#lcd.transparency_color = (0, 0, 0)
+#lcd.draw_image(10, 10, numbers_image)
+#lcd.transparency_color = None
+
+print("end")

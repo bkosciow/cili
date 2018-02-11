@@ -22,6 +22,7 @@ typedef struct {
     int color;
     int background_color;
     int rotation;
+    int transparency[3];
 } ILIObject;
 
 #define min(a,b) (((a)<(b))?(a):(b))
@@ -39,7 +40,8 @@ void fill_rect(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1, uint16_t pos_x
 void draw_rect(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1, uint16_t pos_x2, uint16_t pos_y2);
 void draw_pixel(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1);
 void draw_line(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1, uint16_t pos_x2, uint16_t pos_y2);
-void draw_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, PyObject *image);
+void draw_object_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, PyObject *image);
+void draw_jpeg_file_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, FILE *infile);
 
 void draw_circle(ILIObject *self, uint16_t pos_x, uint16_t pos_y, uint16_t radius);
 void draw_arc(ILIObject *self, uint16_t pos_x, uint16_t pos_y, uint16_t radius, uint16_t start, uint16_t end);

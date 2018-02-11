@@ -28,6 +28,9 @@ int ili_init(ILIObject *self, PyObject *args) {
         return -1;
     }
     self->rotation = 0;
+    self->transparency[0] = -1;
+    self->transparency[1] = -1;
+    self->transparency[2] = -1;
 
     return 0;
 }
@@ -117,6 +120,34 @@ int *magic_set_rotation(ILIObject *self, PyObject *value, void *closure) {
     return 0;
 }
 
+PyObject *magic_get_transparency_color(ILIObject *self, void *closure) {
+    PyObject *pylist = PyTuple_New(3);
+    PyTuple_SetItem(pylist, 0, PyLong_FromLong(self->transparency[0]));
+    PyTuple_SetItem(pylist, 1, PyLong_FromLong(self->transparency[1]));
+    PyTuple_SetItem(pylist, 2, PyLong_FromLong(self->transparency[2]));
+
+    return Py_BuildValue("N",pylist);
+}
+
+int *magic_set_transparency_color(ILIObject *self, PyObject *args, void *closure) {
+
+    int r,g,b;
+    if (args == Py_None) {
+        r = -1;
+        g = -1;
+        b = -1;
+    } else {
+        r = PyLong_AsLong(PyTuple_GetItem(args, 0));
+        g = PyLong_AsLong(PyTuple_GetItem(args, 1));
+        b = PyLong_AsLong(PyTuple_GetItem(args, 2));
+    }
+    self->transparency[0] = r;
+    self->transparency[1] = g;
+    self->transparency[2] = b;
+
+    return 0;
+}
+
 //***************************
 // drawing funcions
 PyObject *ili_fill_rect(ILIObject *self, PyObject *args) {
@@ -202,15 +233,31 @@ PyObject *ili_draw_arc(ILIObject *self, PyObject *args) {
 
 PyObject *ili_draw_image(ILIObject *self, PyObject *args) {
     PyObject *o;
+    char *filename;
     int pos_x, pos_y;
-    PyObject *image;
+    FILE * image;
 
-    if (!PyArg_ParseTuple(args, "IIO", &pos_x, &pos_y, &o)) {
-        return NULL;
+    if (PyObject_Length(args) == 3) {
+        if (PyUnicode_Check(PyTuple_GetItem(args, 2))) {
+            if (!PyArg_ParseTuple(args, "IIs", &pos_x, &pos_y, &filename)) {
+                return NULL;
+            }
+            if ((image = fopen(filename, "rb")) == NULL) {
+                PyErr_Format(PyExc_AttributeError, "can't open file %s.", filename);
+                return NULL;
+            }
+            draw_jpeg_file_image(self, pos_x, pos_y, image);
+            fclose(image);
+        } else {
+            if (!PyArg_ParseTuple(args, "IIO", &pos_x, &pos_y, &o)) {
+                return NULL;
+            }
+            PyObject *image = PyObject_CallMethodObjArgs(o, PyUnicode_FromString("convert"), PyUnicode_FromString("RGB"), NULL);
+            draw_object_image(self, pos_x, pos_y, image);
+            Py_DECREF(o);
+            Py_DECREF(image);
+        }
     }
-    image = PyObject_CallMethodObjArgs(o, PyUnicode_FromString("convert"), PyUnicode_FromString("RGB"), NULL);
-
-    draw_image(self, pos_x, pos_y, image);
 
     return Py_None;
 }
