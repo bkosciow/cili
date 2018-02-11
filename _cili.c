@@ -231,6 +231,15 @@ PyObject *ili_draw_arc(ILIObject *self, PyObject *args) {
     return Py_None;
 }
 
+int is_jpeg(char* filename) {
+    char *dot = strrchr(filename, '.');
+    if (dot && (!strcmp(dot, ".jpeg") || !strcmp(dot, ".jpg"))) {
+        return 1;
+    }
+
+    return 0;
+}
+
 PyObject *ili_draw_image(ILIObject *self, PyObject *args) {
     PyObject *o;
     char *filename;
@@ -246,7 +255,12 @@ PyObject *ili_draw_image(ILIObject *self, PyObject *args) {
                 PyErr_Format(PyExc_AttributeError, "can't open file %s.", filename);
                 return NULL;
             }
-            draw_jpeg_file_image(self, pos_x, pos_y, image);
+            if (is_jpeg(filename)) {
+                draw_jpeg_file_image(self, pos_x, pos_y, image);
+            } else {
+                PyErr_Format(PyExc_AttributeError, "unsupported file %s.", filename);
+                return NULL;
+            }
             fclose(image);
         } else {
             if (!PyArg_ParseTuple(args, "IIO", &pos_x, &pos_y, &o)) {

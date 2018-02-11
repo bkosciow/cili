@@ -337,6 +337,8 @@ void draw_jpeg_file_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, FILE 
     int row_stride;		/* physical row width in output buffer */
     int red,green,blue;
     int i;
+    int temp_area[3] = {-1};
+    int area[3] = {-1};
 
     /* Step 1: allocate and initialize JPEG decompression object */
     cinfo.err = jpeg_std_error(&err);
@@ -373,7 +375,28 @@ void draw_jpeg_file_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, FILE 
             red = (int)(*pixel_row++);
             green = (int)(*pixel_row++);
             blue = (int)(*pixel_row++);
-            data(self, get_color(red, green, blue));
+            if (is_transparent(self, red, green, blue)) {
+                area[0] = pos_x;
+                area[1] = pos_y + cinfo.output_scanline + 1;
+                area[2] = pos_x + cinfo.output_width - 1;
+                area[3] = pos_y + cinfo.output_height - 1;
+
+                temp_area[0] = pos_x + i + 1;
+                temp_area[1] = pos_y + cinfo.output_scanline;
+                temp_area[2] = pos_x + cinfo.output_width -1;
+                temp_area[3] = pos_y + cinfo.output_scanline;
+            } else {
+                if (temp_area[0] != -1) {
+                     set_area(self, temp_area[0], temp_area[1], temp_area[2], temp_area[3]);
+                     temp_area[0] = -1;
+                }
+                data(self, get_color(red, green, blue));
+            }
+        }
+        if (area[0] != -1) {
+            set_area(self, area[0], area[1], area[2], area[3]);
+            area[0] = -1;
+            temp_area[0] = -1;
         }
     }
 
