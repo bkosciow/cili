@@ -5,17 +5,9 @@
 #include <math.h>
 #include "ili.h"
 #include "interface.h"
+#define PNG_SKIP_SETJMP_CHECK
+#include <png.h>
 #include <jpeglib.h>
-#include <setjmp.h>
-
-
-struct my_error_mgr {
-  struct jpeg_error_mgr pub;	/* "public" fields */
-
-  jmp_buf setjmp_buffer;	/* for return to caller */
-};
-
-typedef struct my_error_mgr * my_error_ptr;
 
 void setup_pins(ILIObject *self) {
     wiringPiSetupGpio();
@@ -406,4 +398,102 @@ void draw_jpeg_file_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, FILE 
     /* Step 8: Release JPEG decompression object */
     /* This is an important step since it will release a good deal of memory. */
     jpeg_destroy_decompress(&cinfo);
+}
+
+void draw_png_file_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, FILE *fp) {
+    int width, height;
+    png_byte color_type;
+    png_byte bit_depth;
+    png_bytep *row_pointers;
+    int x,y;
+    int temp_area[3] = {-1};
+    int area[3] = {-1};
+    int red,green,blue;
+
+    png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if(!png) abort();
+
+    png_infop info = png_create_info_struct(png);
+    if(!info) abort();
+
+    if(setjmp(png_jmpbuf(png))) abort();
+
+    png_init_io(png, fp);
+
+    png_read_info(png, info);
+
+    width      = png_get_image_width(png, info);
+    height     = png_get_image_height(png, info);
+    color_type = png_get_color_type(png, info);
+    bit_depth  = png_get_bit_depth(png, info);
+
+    // Read any color_type into 8bit depth, RGBA format.
+    // See http://www.libpng.org/pub/png/libpng-manual.txt
+    if(bit_depth == 16)
+        png_set_strip_16(png);
+
+    if(color_type == PNG_COLOR_TYPE_PALETTE)
+        png_set_palette_to_rgb(png);
+
+    // PNG_COLOR_TYPE_GRAY_ALPHA is always 8 or 16bit depth.
+    if(color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
+        png_set_expand_gray_1_2_4_to_8(png);
+
+    if(png_get_valid(png, info, PNG_INFO_tRNS))
+        png_set_tRNS_to_alpha(png);
+
+    // These color_type don't have an alpha channel then fill it with 0xff.
+    if(color_type == PNG_COLOR_TYPE_RGB ||
+     color_type == PNG_COLOR_TYPE_GRAY ||
+     color_type == PNG_COLOR_TYPE_PALETTE)
+        png_set_filler(png, 0xFF, PNG_FILLER_AFTER);
+
+    if(color_type == PNG_COLOR_TYPE_GRAY ||
+     color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+    png_set_gray_to_rgb(png);
+
+    png_read_update_info(png, info);
+
+    row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+    for(y = 0; y < height; y++) {
+        row_pointers[y] = (png_byte*)malloc(png_get_rowbytes(png,info));
+    }
+    png_read_image(png, row_pointers);
+
+    set_area(self, pos_x, pos_y, pos_x + width - 1, pos_y + height - 1);
+    for(y = 0; y < height; y++) {
+        png_bytep row = row_pointers[y];
+        for(x = 0; x < width; x++) {
+            png_bytep px = &(row[x * 4]);
+            red = px[0];
+            green = px[1];
+            blue = px[2];
+            if (is_transparent(self, red, green, blue)) {
+                area[0] = pos_x;
+                area[1] = pos_y + y + 1;
+                area[2] = pos_x + width - 1;
+                area[3] = pos_y + height - 1;
+
+                temp_area[0] = pos_x + x + 1;
+                temp_area[1] = pos_y + y;
+                temp_area[2] = pos_x + width -1;
+                temp_area[3] = pos_y + y;
+            } else {
+                if (temp_area[0] != -1) {
+                   set_area(self, temp_area[0], temp_area[1], temp_area[2], temp_area[3]);
+                   temp_area[0] = -1;
+                }
+                data(self, get_color(red, green, blue));
+            }
+        }
+        if (area[0] != -1) {
+            set_area(self, area[0], area[1], area[2], area[3]);
+            area[0] = -1;
+            temp_area[0] = -1;
+        }
+    }
+
+    png_destroy_read_struct(&png, &info, NULL);
+    png=NULL;
+    info=NULL;
 }

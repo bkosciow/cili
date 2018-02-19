@@ -25,8 +25,8 @@ lcd.draw_image(0, 0, "assets/japan_temple_240x320.jpg")
 lcd.transparency_color = (255, 255, 255)
 lcd.draw_image(10, 10, "assets/numbers.jpg")
 
-
-#lcd.draw_image(0, 0, "assets/dsp2017_101_64.png")
+lcd.transparency_color = (0, 0, 0)
+lcd.draw_image(10, 100, "assets/dsp2017_101_64.png")
 
 #numbers_image = Image.open("assets/dsp2017_101_64.png")
 #lcd.transparency_color = (0, 0, 0)
