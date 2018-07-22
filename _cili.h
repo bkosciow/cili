@@ -49,7 +49,7 @@ PyObject *magic_get_transparency_color(ILIObject *self, void *closure);
 int *magic_set_transparency_color(ILIObject *self, PyObject *value, void *closure);
 
 PyMethodDef module_methods[] = {
-    {"init_display", (PyCFunction)ili_init_display, METH_VARARGS, init_display_docstring},
+    {"init", (PyCFunction)ili_init_display, METH_VARARGS, init_display_docstring},
     {"fill_rect", (PyCFunction)ili_fill_rect, METH_VARARGS, fill_rect_docstring},
     {"set_color", (PyCFunction)ili_set_color, METH_VARARGS, set_color_docstring},
     {"set_backgroundcolor", (PyCFunction)ili_set_backgroundcolor, METH_VARARGS, set_backgroundcolor_docstring},

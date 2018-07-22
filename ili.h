@@ -1,6 +1,12 @@
 #include <Python.h>
 
 typedef struct {
+    int r;
+    int g;
+    int b;
+} RGB;
+
+typedef struct {
     PyObject_HEAD
     int width;
     int height;
@@ -22,7 +28,8 @@ typedef struct {
     int color;
     int background_color;
     int rotation;
-    int transparency[3];
+    RGB *transparency;
+    int is_transparency;
 } ILIObject;
 
 #define min(a,b) (((a)<(b))?(a):(b))

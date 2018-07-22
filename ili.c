@@ -266,13 +266,18 @@ void draw_rect(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1, uint16_t pos_x
 }
 
 static int is_transparent(ILIObject *self, int r, int g, int b) {
-    if (self->transparency[0] == -1) {
+    if (self->is_transparency == 0) {
         return 0;
     }
-    if (self->transparency[0] == r && self->transparency[1] == g && self->transparency[2] == b) {
-        return 1;
+    int i;
+    for(i=0; i<self->is_transparency; i++) {
+        if (self->transparency[i].r == r &&
+            self->transparency[i].g == g &&
+            self->transparency[i].b == b)
+            {
+            return 1;
+        }
     }
-
     return 0;
 }
 
@@ -320,6 +325,10 @@ void draw_object_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, PyObject
             temp_area[0] = -1;
         }
     }
+
+//  Memory leaks ?
+//    Py_DECREF(size);
+//    Py_DECREF(pixel);
 }
 
 void draw_jpeg_file_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, FILE *infile) {

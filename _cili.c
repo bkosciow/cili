@@ -28,9 +28,7 @@ int ili_init(ILIObject *self, PyObject *args) {
         return -1;
     }
     self->rotation = 0;
-    self->transparency[0] = -1;
-    self->transparency[1] = -1;
-    self->transparency[2] = -1;
+    self->is_transparency=0;
 
     return 0;
 }
@@ -51,6 +49,7 @@ PyObject *ili_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
 
 PyObject *ili_init_display(ILIObject *self) {
     init_display(self);
+    Py_INCREF(Py_None);
     return Py_None;
 }
 
@@ -121,29 +120,54 @@ int *magic_set_rotation(ILIObject *self, PyObject *value, void *closure) {
 }
 
 PyObject *magic_get_transparency_color(ILIObject *self, void *closure) {
-    PyObject *pylist = PyTuple_New(3);
-    PyTuple_SetItem(pylist, 0, PyLong_FromLong(self->transparency[0]));
-    PyTuple_SetItem(pylist, 1, PyLong_FromLong(self->transparency[1]));
-    PyTuple_SetItem(pylist, 2, PyLong_FromLong(self->transparency[2]));
+    if (self->is_transparency == 0) {
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+    int i;
+    PyObject *pylist = PyTuple_New(self->is_transparency);
+    for (i=0; i<self->is_transparency; i++) {
+        PyObject *item = PyTuple_New(3);
+        PyTuple_SetItem(item, 0, PyLong_FromLong(self->transparency[i].r));
+        PyTuple_SetItem(item, 1, PyLong_FromLong(self->transparency[i].g));
+        PyTuple_SetItem(item, 2, PyLong_FromLong(self->transparency[i].b));
+        PyTuple_SetItem(pylist, i, item);
+    }
 
     return Py_BuildValue("N",pylist);
 }
 
 int *magic_set_transparency_color(ILIObject *self, PyObject *args, void *closure) {
-
-    int r,g,b;
+    free(self->transparency);
+    self->is_transparency = 0;
     if (args == Py_None) {
-        r = -1;
-        g = -1;
-        b = -1;
+        self->is_transparency = 0;
     } else {
-        r = PyLong_AsLong(PyTuple_GetItem(args, 0));
-        g = PyLong_AsLong(PyTuple_GetItem(args, 1));
-        b = PyLong_AsLong(PyTuple_GetItem(args, 2));
+        //multiple rgb tuples
+        if (PyTuple_Check(PyTuple_GetItem(args, 0))) {
+            int size = PyTuple_Size(args);
+            int i;
+            self->transparency = malloc((size+1) * sizeof(RGB));
+            self->is_transparency = size;
+            for(i=0; i<size; i++) {
+                PyObject *t = PyTuple_GetItem(args, i);
+                RGB rgb;
+                rgb.r = PyLong_AsLong(PyTuple_GetItem(t, 0));
+                rgb.g = PyLong_AsLong(PyTuple_GetItem(t, 1));
+                rgb.b = PyLong_AsLong(PyTuple_GetItem(t, 2));
+                self->transparency[i] = rgb;
+            }
+        } else { //single rgb tuple
+            self->is_transparency = 1;
+            RGB rgb;
+            rgb.r = PyLong_AsLong(PyTuple_GetItem(args, 0));
+            rgb.g = PyLong_AsLong(PyTuple_GetItem(args, 1));
+            rgb.b = PyLong_AsLong(PyTuple_GetItem(args, 2));
+
+            self->transparency = malloc(1 * sizeof(RGB));
+            self->transparency[0] = rgb;
+        }
     }
-    self->transparency[0] = r;
-    self->transparency[1] = g;
-    self->transparency[2] = b;
 
     return 0;
 }
@@ -157,6 +181,7 @@ PyObject *ili_fill_rect(ILIObject *self, PyObject *args) {
     }
     fill_rect(self, pos_x1, pos_y1, pos_x2, pos_y2);
 
+    Py_INCREF(Py_None);
     return Py_None;
 }
 
@@ -167,6 +192,7 @@ PyObject *ili_draw_rect(ILIObject *self, PyObject *args) {
     }
     draw_rect(self, pos_x1, pos_y1, pos_x2, pos_y2);
 
+    Py_INCREF(Py_None);
     return Py_None;
 }
 
@@ -177,17 +203,19 @@ PyObject *ili_set_color(ILIObject *self, PyObject *args) {
     }
     set_color(self, r,g,b);
 
+    Py_INCREF(Py_None);
     return Py_None;
 }
 
 PyObject *ili_set_backgroundcolor(ILIObject *self, PyObject *args) {
-   int r, g, b;
+    int r, g, b;
     if (!PyArg_ParseTuple(args, "III", &r, &g, &b)) {
         return NULL;
     }
 
     set_backgroundcolor(self, r,g,b);
 
+    Py_INCREF(Py_None);
     return Py_None;
 }
 
@@ -198,6 +226,7 @@ PyObject *ili_draw_pixel(ILIObject *self, PyObject *args) {
     }
     draw_pixel(self, pos_x1, pos_y1);
 
+    Py_INCREF(Py_None);
     return Py_None;
 }
 
@@ -208,6 +237,7 @@ PyObject *ili_draw_line(ILIObject *self, PyObject *args) {
     }
     draw_line(self, pos_x1, pos_y1, pos_x2, pos_y2);
 
+    Py_INCREF(Py_None);
     return Py_None;
 }
 
@@ -218,6 +248,7 @@ PyObject *ili_draw_circle(ILIObject *self, PyObject *args) {
     }
     draw_circle(self, pos_x, pos_y, radius);
 
+    Py_INCREF(Py_None);
     return Py_None;
 }
 
@@ -228,6 +259,7 @@ PyObject *ili_draw_arc(ILIObject *self, PyObject *args) {
     }
     draw_arc(self, pos_x, pos_y, radius, start, end);
 
+    Py_INCREF(Py_None);
     return Py_None;
 }
 
@@ -279,10 +311,11 @@ PyObject *ili_draw_image(ILIObject *self, PyObject *args) {
             }
             PyObject *image = PyObject_CallMethodObjArgs(o, PyUnicode_FromString("convert"), PyUnicode_FromString("RGB"), NULL);
             draw_object_image(self, pos_x, pos_y, image);
-            Py_DECREF(o);
+//            Py_DECREF(o);
             Py_DECREF(image);
         }
     }
 
+    Py_INCREF(Py_None);
     return Py_None;
 }
