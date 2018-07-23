@@ -7,7 +7,8 @@ static char module_docstring[] =
 
 static PyTypeObject ILIType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "cili9486.ili",             /* tp_name */
+//    "cili9486.ili",             /* tp_name */
+    "cili.ili9486",
     sizeof(ILIObject),          /* tp_basicsize */
     0,                          /* tp_itemsize */
     (destructor)ili_dealloc,    /* tp_dealloc */
@@ -47,7 +48,7 @@ static PyTypeObject ILIType = {
     ili_new,                    /* tp_new */
 };
 
-PyMODINIT_FUNC PyInit_cili9486(void) {
+PyMODINIT_FUNC PyInit_ili9486(void) {
     PyObject *module;
 
     if (PyType_Ready(&ILIType) < 0)
@@ -55,7 +56,7 @@ PyMODINIT_FUNC PyInit_cili9486(void) {
 
     static struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
-        "cili9486",
+        "ili9486",
         module_docstring,
         -1,
         NULL, //module_methods,
@@ -68,7 +69,7 @@ PyMODINIT_FUNC PyInit_cili9486(void) {
     if (!module) return NULL;
 
     Py_INCREF(&ILIType);
-    PyModule_AddObject(module, "ili", (PyObject *)&ILIType);
+    PyModule_AddObject(module, "ili9486", (PyObject *)&ILIType);
 
     return module;
 }

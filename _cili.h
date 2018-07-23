@@ -68,7 +68,7 @@ PyGetSetDef ili_getset[] = {
     {"color", (getter)magic_get_color, (setter)magic_set_color, "color", NULL},
     {"background_color", (getter)magic_get_background_color, (setter)magic_set_background_color, "background", NULL},
     {"auto_flush", (getter)magic_get_auto_flush, (setter)magic_set_auto_flush, "auto_flush", NULL},
-    {"rotation", (getter)magic_get_rotation, (setter)magic_set_rotation, 'rotation', NULL},
-    {"transparency_color", (getter)magic_get_transparency_color, (setter)magic_set_transparency_color, 'transparency_color', NULL},
+    {"rotation", (getter)magic_get_rotation, (setter)magic_set_rotation, "rotation", NULL},
+    {"transparency_color", (getter)magic_get_transparency_color, (setter)magic_set_transparency_color, "transparency_color", NULL},
     {NULL}
 };
