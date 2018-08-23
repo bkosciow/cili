@@ -292,12 +292,14 @@ void draw_object_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, PyObject
     size = PyObject_GetAttrString(image, "size");
     width = PyLong_AsLong(PyTuple_GetItem(size, 0));
     height = PyLong_AsLong(PyTuple_GetItem(size, 1));
-
+    Py_DECREF(size);
     set_area(self, pos_x, pos_y, pos_x + width - 1, pos_y + height - 1);
 
     for(j=0; j<height; j++) {
         for (i=0; i<width; i++) {
-            pixel = PyObject_CallMethodObjArgs(image, PyUnicode_FromString("getpixel"), Py_BuildValue("(ii)", i, j), NULL);
+            pixel = PyObject_CallMethod(
+                image, "getpixel","((i,i))", i, j
+            );
             r = PyLong_AsLong(PyTuple_GetItem(pixel, 0));
             g = PyLong_AsLong(PyTuple_GetItem(pixel, 1));
             b = PyLong_AsLong(PyTuple_GetItem(pixel, 2));
@@ -318,6 +320,7 @@ void draw_object_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, PyObject
                 }
                 data(self, get_color(r, g, b));
             }
+            Py_DECREF(pixel);
         }
         if (area[0] != -1) {
             set_area(self, area[0], area[1], area[2], area[3]);
@@ -325,10 +328,6 @@ void draw_object_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, PyObject
             temp_area[0] = -1;
         }
     }
-
-//  Memory leaks ?
-//    Py_DECREF(size);
-//    Py_DECREF(pixel);
 }
 
 void draw_jpeg_file_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, FILE *infile) {
@@ -500,6 +499,7 @@ void draw_png_file_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, FILE *
             area[0] = -1;
             temp_area[0] = -1;
         }
+        png_free(png, row);
     }
 
     png_destroy_read_struct(&png, &info, NULL);

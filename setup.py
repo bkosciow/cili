@@ -2,6 +2,13 @@ from distutils.core import setup, Extension
 
 setup(
     name="cili",
+    version="0.1",
+    url="https://github.com/bkosciow/cili",
+    license = "MIT",
+    author="Bartosz Kościów",
+    author_email="kosci1@gmail.com",
+    description="GfxLCD in C",
+
     ext_modules=[
         Extension(
             "cili.ili9325",

@@ -21,7 +21,6 @@ int ili_init(ILIObject *self, PyObject *args) {
             &self->CS, &self->RST, &self->RS)) {
             return -1;
         }
-        printf("%d", self->SPEED);
     } else {
         PyErr_SetString(PyExc_RuntimeError,
                     "Wrong number of parameters: \n width, height, PIN_CS, PIN_RS,PIN_W,PIN_RST,PIN_DB8,PIN_DB9,PIN_DB10,PIN_DB11,PIN_DB12,PIN_DB13,PIN_DB14,PIN_DB15 \n width, height, SPI, SPEED, CS, RST, RS");
@@ -282,11 +281,9 @@ int is_png(char* filename) {
 }
 
 PyObject *ili_draw_image(ILIObject *self, PyObject *args) {
-    PyObject *o;
     char *filename;
     int pos_x, pos_y;
     FILE * image;
-
     if (PyObject_Length(args) == 3) {
         if (PyUnicode_Check(PyTuple_GetItem(args, 2))) {
             if (!PyArg_ParseTuple(args, "IIs", &pos_x, &pos_y, &filename)) {
@@ -306,12 +303,12 @@ PyObject *ili_draw_image(ILIObject *self, PyObject *args) {
             }
             fclose(image);
         } else {
+            PyObject *o;
             if (!PyArg_ParseTuple(args, "IIO", &pos_x, &pos_y, &o)) {
                 return NULL;
             }
             PyObject *image = PyObject_CallMethodObjArgs(o, PyUnicode_FromString("convert"), PyUnicode_FromString("RGB"), NULL);
             draw_object_image(self, pos_x, pos_y, image);
-//            Py_DECREF(o);
             Py_DECREF(image);
         }
     }
