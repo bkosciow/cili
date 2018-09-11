@@ -265,6 +265,36 @@ void draw_rect(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1, uint16_t pos_x
     draw_line(self, pos_x2, pos_y1, pos_x2, pos_y2);
 }
 
+void draw_text(ILIObject *self, uint16_t pos_x, uint16_t pos_y, char *text, uint16_t with_background) {
+    PyObject *size;
+    PyObject *rows;
+    int width, height, i, j, z;
+    int offset=0;
+    int len = strlen(text);
+    int letter;
+    size = PyObject_GetAttrString(self->font, "size");
+    width = PyLong_AsLong(PyTuple_GetItem(size, 0));
+    height = PyLong_AsLong(PyTuple_GetItem(size, 1));
+    Py_DECREF(size);
+    for (i=0;i<len;i++) {
+        rows = PyObject_CallMethod(self->font, "get", "c", text[i]);
+        for (j=0;j<height;j++) {
+            letter = PyLong_AsLong(PyList_GetItem(rows, j));
+            for(z=0;z<width;z++) {
+                if (letter & 0x01) {
+                    draw_pixel(self, pos_x + offset + z, pos_y+j);
+                    printf("*");
+                } else {
+                    printf(" ");
+                }
+                letter >>= 1;
+            }
+        }
+        offset += width;
+        Py_DECREF(rows);
+    }
+}
+
 static int is_transparent(ILIObject *self, int r, int g, int b) {
     if (self->is_transparency == 0) {
         return 0;

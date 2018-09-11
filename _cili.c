@@ -171,6 +171,16 @@ int *magic_set_transparency_color(ILIObject *self, PyObject *args, void *closure
     return 0;
 }
 
+PyObject *magic_get_font(ILIObject *self, void *closure) {
+    return Py_BuildValue("O", self->font);
+}
+
+int *magic_set_font(ILIObject *self, PyObject *value, void *closure) {
+    self->font = value;
+
+    return 0;
+}
+
 //***************************
 // drawing funcions
 PyObject *ili_fill_rect(ILIObject *self, PyObject *args) {
@@ -262,6 +272,19 @@ PyObject *ili_draw_arc(ILIObject *self, PyObject *args) {
     return Py_None;
 }
 
+PyObject *ili_draw_text(ILIObject *self, PyObject *args) {
+    char *text;
+    int pos_x, pos_y, with_background=0;
+    if (!PyArg_ParseTuple(args, "IIs|I", &pos_x, &pos_y, &text, &with_background)) {
+        PyErr_Format(PyExc_AttributeError, "no text");
+        return NULL;
+    }
+    draw_text(self, pos_x, pos_y, text, with_background);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 int is_jpeg(char* filename) {
     char *dot = strrchr(filename, '.');
     if (dot && (!strcmp(dot, ".jpeg") || !strcmp(dot, ".jpg"))) {
@@ -316,3 +339,4 @@ PyObject *ili_draw_image(ILIObject *self, PyObject *args) {
     Py_INCREF(Py_None);
     return Py_None;
 }
+

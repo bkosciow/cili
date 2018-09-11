@@ -1,46 +1,63 @@
 import socket
 import os
+from gfxlcd.font.font8x8 import Font8x8
+
 
 if socket.gethostname() == "rpiv2":
-    import cili9486
+    import cili.ili9486
     # width, height, SPI, SPEED, CS, RST, RS
     lcd = cili9486.ili(320, 480, 0, 3200000, 8, 25, 24)
 else:
-    import cili9325
+    import cili.ili9325
     import RPi.GPIO  # pylint: disable=I0011,F0401
     RPi.GPIO.setmode(RPi.GPIO.BCM)
     RPi.GPIO.setup(6, RPi.GPIO.OUT)
     RPi.GPIO.output(6, 1)
-    lcd = cili9325.ili(320, 240, 18, 27, 17, 25, 22, 23, 24, 5, 12, 16, 20, 21)
+    lcd = cili.ili9325.ili9325(320, 240, 18, 27, 17, 25, 22, 23, 24, 5, 12, 16, 20, 21)
 
-lcd.rotation = 270
+class myfont(Font8x8):
+    def get(self, letter):
+        """return array with letter"""
+        # print("python: ", letter, ord(letter))
+        # print(self.font[ord(letter)])
+        return self.font[ord(letter)]
+
+lcd.rotation = 0
 print(lcd.width, lcd.height, lcd.rotation)
-lcd.init_display()
-lcd.fill_rect(0,0,10,10)
+lcd.init()
 
-lcd.background_color = (255,255,0)
-lcd.fill_rect(0,0,100,200)
-#exit(0);
-lcd.background_color = (128,255,128)
-lcd.background_color = (0,255,255)
-lcd.fill_rect(0,0,240-1,320-1)
-lcd.background_color = (255,0,0)
-lcd.fill_rect(0,0,10,10)
-lcd.fill_rect(229,0,239,10)
-lcd.fill_rect(0,309,10,319)
-lcd.fill_rect(229,309,239,319)
+f = Font8x8()
+f = myfont()
+# print(f.size)
+lcd.font = f
+lcd.draw_text(25, 1, "Star Wars", False)
+# lcd.draw_text(30, 10, "Death Star")
 
-lcd.color = (255,0,0)
-lcd.draw_pixel(120,160)
-
-lcd.color = (244,0,0)
-lcd.draw_line(10,10,230,10)
-lcd.draw_line(10,10,10,310)
-lcd.draw_line(10,310,230,310)
-lcd.draw_line(230,10,230,310)
-
-lcd.draw_line(10,10,230,310)
-lcd.draw_line(230,10,10,310)
+# lcd.fill_rect(0,0,10,10)
+#
+# lcd.background_color = (255,255,0)
+# lcd.fill_rect(0,0,100,200)
+# #exit(0);
+# lcd.background_color = (128,255,128)
+# lcd.background_color = (0,255,255)
+# lcd.fill_rect(0,0,240-1,320-1)
+# lcd.background_color = (255,0,0)
+# lcd.fill_rect(0,0,10,10)
+# lcd.fill_rect(229,0,239,10)
+# lcd.fill_rect(0,309,10,319)
+# lcd.fill_rect(229,309,239,319)
+#
+# lcd.color = (255,0,0)
+# lcd.draw_pixel(120,160)
+#
+# lcd.color = (244,0,0)
+# lcd.draw_line(10,10,230,10)
+# lcd.draw_line(10,10,10,310)
+# lcd.draw_line(10,310,230,310)
+# lcd.draw_line(230,10,230,310)
+#
+# lcd.draw_line(10,10,230,310)
+# lcd.draw_line(230,10,10,310)
 print("end")
 # lcd.draw_pixel(121,160)
 # lcd.draw_pixel(120,161)
