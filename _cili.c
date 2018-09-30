@@ -229,11 +229,11 @@ PyObject *ili_set_backgroundcolor(ILIObject *self, PyObject *args) {
 }
 
 PyObject *ili_draw_pixel(ILIObject *self, PyObject *args) {
-    int pos_x1, pos_y1;
-    if (!PyArg_ParseTuple(args, "II", &pos_x1, &pos_y1)) {
+    int pos_x1, pos_y1, color=-1;
+    if (!PyArg_ParseTuple(args, "II|I", &pos_x1, &pos_y1)) {
         return NULL;
     }
-    draw_pixel(self, pos_x1, pos_y1);
+    draw_pixel(self, pos_x1, pos_y1, color);
 
     Py_INCREF(Py_None);
     return Py_None;

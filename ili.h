@@ -46,7 +46,7 @@ void set_backgroundcolor(ILIObject *self, uint16_t r, uint16_t g, uint16_t b);
 uint16_t get_color(uint16_t r, uint16_t g, uint16_t b);
 void fill_rect(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1, uint16_t pos_x2, uint16_t pos_y2);
 void draw_rect(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1, uint16_t pos_x2, uint16_t pos_y2);
-void draw_pixel(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1);
+void draw_pixel(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1, uint16_t color);
 void draw_line(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1, uint16_t pos_x2, uint16_t pos_y2);
 void draw_object_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, PyObject *image);
 void draw_jpeg_file_image(ILIObject *self, uint16_t pos_x, uint16_t pos_y, FILE *infile);

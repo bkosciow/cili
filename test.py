@@ -30,7 +30,9 @@ f = Font8x8()
 f = myfont()
 # print(f.size)
 lcd.font = f
-lcd.draw_text(25, 1, "Star Wars", False)
+lcd.color = (0,0,0)
+lcd.background_color = (255,255,255)
+lcd.draw_text(25, 1, "Star Wars", True)
 # lcd.draw_text(30, 10, "Death Star")
 
 # lcd.fill_rect(0,0,10,10)

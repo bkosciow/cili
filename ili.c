@@ -66,9 +66,13 @@ void fill_rect(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1, uint16_t pos_x
     }
 }
 
-void draw_pixel(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1) {
+void draw_pixel(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1, uint16_t color) {
     set_area(self, pos_x1, pos_y1, pos_x1, pos_y1);
-    data(self, self->color);
+    if (color>-1) {
+        data(self, color);
+    } else {
+        data(self, self->color);
+    }
 }
 
 void draw_vertical_line(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1, uint16_t length) {
@@ -216,14 +220,14 @@ void draw_line(ILIObject *self, uint16_t pos_x1, uint16_t pos_y1, uint16_t pos_x
 void draw_circle(ILIObject *self, uint16_t pos_x, uint16_t pos_y, uint16_t radius) {
     int err=0, offset_x = radius, offset_y=0;
     while (offset_x >= offset_y) {
-        draw_pixel(self, pos_x + offset_x, pos_y + offset_y);
-        draw_pixel(self, pos_x + offset_y, pos_y + offset_x);
-        draw_pixel(self, pos_x - offset_y, pos_y + offset_x);
-        draw_pixel(self, pos_x - offset_x, pos_y + offset_y);
-        draw_pixel(self, pos_x - offset_x, pos_y - offset_y);
-        draw_pixel(self, pos_x - offset_y, pos_y - offset_x);
-        draw_pixel(self, pos_x + offset_y, pos_y - offset_x);
-        draw_pixel(self, pos_x + offset_x, pos_y - offset_y);
+        draw_pixel(self, pos_x + offset_x, pos_y + offset_y, -1);
+        draw_pixel(self, pos_x + offset_y, pos_y + offset_x, -1);
+        draw_pixel(self, pos_x - offset_y, pos_y + offset_x, -1);
+        draw_pixel(self, pos_x - offset_x, pos_y + offset_y, -1);
+        draw_pixel(self, pos_x - offset_x, pos_y - offset_y, -1);
+        draw_pixel(self, pos_x - offset_y, pos_y - offset_x, -1);
+        draw_pixel(self, pos_x + offset_y, pos_y - offset_x, -1);
+        draw_pixel(self, pos_x + offset_x, pos_y - offset_y, -1);
         if (err <= 0) {
             offset_y += 1;
             err += 2*offset_y + 1;
@@ -240,14 +244,14 @@ void draw_arc(ILIObject *self, uint16_t pos_x, uint16_t pos_y, uint16_t radius, 
     start_r = start * M_PI / 180;
     end_r = end * M_PI / 180;
     while (offset_x >= offset_y) {
-        if (start_r <= atan2(offset_y, offset_x) && atan2(offset_y, offset_x) <= end_r) {draw_pixel(self, pos_x + offset_x, pos_y + offset_y);}
-        if (start_r <= atan2(offset_x, offset_y) && atan2(offset_x, offset_y) <= end_r) {draw_pixel(self, pos_x + offset_y, pos_y + offset_x);}
-        if (start_r <= atan2(offset_x, -offset_y) && atan2(offset_x, -offset_y) <= end_r) {draw_pixel(self, pos_x - offset_y, pos_y + offset_x);}
-        if (start_r <= atan2(offset_y, -offset_x) && atan2(offset_y, -offset_x) <= end_r) {draw_pixel(self, pos_x - offset_x, pos_y + offset_y);}
-        if (start_r <= atan2(-offset_y, -offset_x) + 2*M_PI && atan2(-offset_y, -offset_x) + 2*M_PI <= end_r) {draw_pixel(self, pos_x - offset_x, pos_y - offset_y);}
-        if (start_r <= atan2(-offset_x, -offset_y) + 2*M_PI && atan2(-offset_x, -offset_y) + 2*M_PI <= end_r) {draw_pixel(self, pos_x - offset_y, pos_y - offset_x);}
-        if (start_r <= atan2(-offset_x, offset_y) + 2*M_PI && atan2(-offset_x, offset_y) + 2*M_PI <= end_r) {draw_pixel(self, pos_x + offset_y, pos_y - offset_x);}
-        if (start_r <= atan2(-offset_y, offset_x) + 2*M_PI && atan2(-offset_y, offset_x) + 2*M_PI <= end_r) {draw_pixel(self, pos_x + offset_x, pos_y - offset_y);}
+        if (start_r <= atan2(offset_y, offset_x) && atan2(offset_y, offset_x) <= end_r) {draw_pixel(self, pos_x + offset_x, pos_y + offset_y, -1);}
+        if (start_r <= atan2(offset_x, offset_y) && atan2(offset_x, offset_y) <= end_r) {draw_pixel(self, pos_x + offset_y, pos_y + offset_x, -1);}
+        if (start_r <= atan2(offset_x, -offset_y) && atan2(offset_x, -offset_y) <= end_r) {draw_pixel(self, pos_x - offset_y, pos_y + offset_x, -1);}
+        if (start_r <= atan2(offset_y, -offset_x) && atan2(offset_y, -offset_x) <= end_r) {draw_pixel(self, pos_x - offset_x, pos_y + offset_y, -1);}
+        if (start_r <= atan2(-offset_y, -offset_x) + 2*M_PI && atan2(-offset_y, -offset_x) + 2*M_PI <= end_r) {draw_pixel(self, pos_x - offset_x, pos_y - offset_y, -1);}
+        if (start_r <= atan2(-offset_x, -offset_y) + 2*M_PI && atan2(-offset_x, -offset_y) + 2*M_PI <= end_r) {draw_pixel(self, pos_x - offset_y, pos_y - offset_x, -1);}
+        if (start_r <= atan2(-offset_x, offset_y) + 2*M_PI && atan2(-offset_x, offset_y) + 2*M_PI <= end_r) {draw_pixel(self, pos_x + offset_y, pos_y - offset_x, -1);}
+        if (start_r <= atan2(-offset_y, offset_x) + 2*M_PI && atan2(-offset_y, offset_x) + 2*M_PI <= end_r) {draw_pixel(self, pos_x + offset_x, pos_y - offset_y, -1);}
         if (err <= 0) {
             offset_y += 1;
             err += 2*offset_y + 1;
@@ -276,16 +280,25 @@ void draw_text(ILIObject *self, uint16_t pos_x, uint16_t pos_y, char *text, uint
     width = PyLong_AsLong(PyTuple_GetItem(size, 0));
     height = PyLong_AsLong(PyTuple_GetItem(size, 1));
     Py_DECREF(size);
+
     for (i=0;i<len;i++) {
         rows = PyObject_CallMethod(self->font, "get", "c", text[i]);
+        if (with_background) {
+            set_area(self, pos_x + offset, pos_y, pos_x + offset + width - 1, pos_y + height - 1);
+        }
         for (j=0;j<height;j++) {
             letter = PyLong_AsLong(PyList_GetItem(rows, j));
             for(z=0;z<width;z++) {
                 if (letter & 0x01) {
-                    draw_pixel(self, pos_x + offset + z, pos_y+j);
-                    printf("*");
+                    if (with_background) {
+                        data(self, self->color);
+                    } else {
+                        draw_pixel(self, pos_x + offset + z, pos_y+j, -1);
+                    }
                 } else {
-                    printf(" ");
+                    if (with_background) {
+                        data(self, self->background_color);
+                    }
                 }
                 letter >>= 1;
             }
