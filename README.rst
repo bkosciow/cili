@@ -8,3 +8,21 @@ Supported:
 - ili9325 via GPIO
 
 It's mostly C implementation of GfxLCD library.
+
+
+Install
+=======
+
+.. code-block::
+
+    pip install gfxcili
+
+
+
+Source
+
+.. code-block::
+
+    python3 setup.py build_ext -i
+
+

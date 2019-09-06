@@ -1,16 +1,23 @@
-import setuptools
-from distutils.core import setup, Extension
+import os
+from setuptools import setup, find_packages, Extension
+
+
+def read(*paths):
+    """Build a file path from *paths* and return the contents."""
+    with open(os.path.join(*paths), 'r') as file_handler:
+        return file_handler.read()
 
 setup(
     name="gfxcili",
-    version="0.2",
+    version="0.3.1",
     url="https://github.com/bkosciow/cili",
-    license = "MIT",
+    license="MIT",
     author="Bartosz Kościów",
     author_email="kosci1@gmail.com",
     description="GfxCili = GfxLCD in C",
+    long_description=(read('README.rst')),
     keywords=[
-        'gfxlcd', 'raspberry pi' ,'ili9328', 'ili9486', 'gfxcili'
+        'gfxlcd', 'raspberry pi', 'ili9328', 'ili9486', 'gfxcili'
     ],
 
     classifiers=[
